@@ -55,18 +55,19 @@ exports.getAvailableSlots = async (req, res, next) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const slots = await Slot.find({ date: { $gte: today }, isActive: true })
+
+    // Only show slots for the beneficiary's assigned shop
+    const User = require('../models/User');
+    const user = await User.findById(req.user.id).select('shop');
+    const query = { date: { $gte: today }, isActive: true };
+    if (user?.shop) query.shop = user.shop;
+
+    const slots = await Slot.find(query)
       .populate('shop', 'name address')
       .sort('date timeSlot');
     const formatted = slots.map(s => {
       const [startTime, endTime] = s.timeSlot.split('-');
-      return {
-        ...s.toObject(),
-        startTime,
-        endTime,
-        maxBeneficiaries: s.capacity,
-        bookedCount: s.booked
-      };
+      return { ...s.toObject(), startTime, endTime, maxBeneficiaries: s.capacity, bookedCount: s.booked };
     });
     res.json({ success: true, data: formatted });
   } catch (err) { next(err); }
