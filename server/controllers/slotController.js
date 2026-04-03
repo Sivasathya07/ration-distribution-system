@@ -59,10 +59,11 @@ exports.getAvailableSlots = async (req, res, next) => {
     // Only show slots for the beneficiary's assigned shop
     const User = require('../models/User');
     const user = await User.findById(req.user.id).select('shop');
-    const query = { date: { $gte: today }, isActive: true };
-    if (user?.shop) query.shop = user.shop;
+    
+    // If no shop assigned, return empty
+    if (!user?.shop) return res.json({ success: true, data: [], message: 'No shop assigned yet' });
 
-    const slots = await Slot.find(query)
+    const slots = await Slot.find({ shop: user.shop, date: { $gte: today }, isActive: true })
       .populate('shop', 'name address')
       .sort('date timeSlot');
     const formatted = slots.map(s => {

@@ -94,8 +94,12 @@ const BeneficiarySlots = () => {
       {slots.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-12 text-center">
           <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-500 dark:text-gray-400 font-medium">No available slots at the moment</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Check back later or contact your ration shop</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">
+            {myBooking ? 'No other slots available' : 'No slots available'}
+          </p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+            Please contact admin to assign a ration shop to your account first
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
