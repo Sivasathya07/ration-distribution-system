@@ -209,22 +209,50 @@ const Users = () => {
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
               <p className="font-semibold text-gray-800 dark:text-white">{assignModal.name}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">{assignModal.email}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                📍 Address: {assignModal.address || 'Not provided'}
+              </p>
+              <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mt-1">
+                🏙️ District: {assignModal.district || 'Not specified'}
+              </p>
               {assignModal.shop && (
-                <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">
                   Currently assigned: {assignModal.shop?.name || 'Unknown shop'}
                 </p>
               )}
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Ration Shop</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Shops in <span className="text-blue-600 font-bold">{assignModal.district || 'same district'}</span>
+              </label>
+              {(() => {
+                const districtShops = assignModal.district
+                  ? shops.filter(s => s.district?.toLowerCase() === assignModal.district?.toLowerCase())
+                  : shops;
+                return districtShops.length === 0 ? (
+                  <div className="text-sm text-red-500 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    No shops found in {assignModal.district}. Showing all shops below.
+                  </div>
+                ) : null;
+              })()}
               <select value={selectedShop} onChange={e => setSelectedShop(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 mt-1">
                 <option value="">-- Select a shop --</option>
-                {shops.map(s => (
-                  <option key={s._id} value={s._id}>{s.name} — {s.district} ({s.beneficiariesCount || 0} beneficiaries)</option>
-                ))}
+                {(() => {
+                  const districtShops = assignModal.district
+                    ? shops.filter(s => s.district?.toLowerCase() === assignModal.district?.toLowerCase())
+                    : shops;
+                  const displayShops = districtShops.length > 0 ? districtShops : shops;
+                  return displayShops.map(s => (
+                    <option key={s._id} value={s._id}>
+                      {s.name} — {s.district} ({s.beneficiariesCount || 0} beneficiaries)
+                    </option>
+                  ));
+                })()}
               </select>
             </div>
+
             <div className="flex gap-3 pt-2">
               <button onClick={() => { setAssignModal(null); setSelectedShop(''); }}
                 className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
