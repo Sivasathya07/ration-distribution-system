@@ -64,6 +64,12 @@ const PaymentModal = ({ items, total, beneficiary, onConfirm, onCancel, loading 
   </div>
 );
 
+const DEFAULT_PRICES = {
+  'Rice': 3, 'Wheat': 2, 'Sugar': 13,
+  'Kerosene': 15, 'Cooking Oil': 40,
+  'Dal': 20, 'Salt': 5
+};
+
 const Distribute = () => {
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [search, setSearch] = useState('');
@@ -81,7 +87,12 @@ const Distribute = () => {
     api.get('/users/beneficiaries').then(r => setBeneficiaries(r.data.data)).catch(() => {});
     api.get('/stock/my-stock').then(r => {
       setStock(r.data.data);
-      if (r.data.data) setItems(r.data.data.items.map(i => ({ ...i, quantity: 0, totalPrice: 0 })));
+      if (r.data.data) setItems(r.data.data.items.map(i => ({
+        ...i,
+        pricePerUnit: i.pricePerUnit || DEFAULT_PRICES[i.name] || 0,
+        quantity: 0,
+        totalPrice: 0
+      })));
     }).catch(() => {});
   }, []);
 
