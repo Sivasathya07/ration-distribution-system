@@ -226,12 +226,17 @@ const Distribute = () => {
       }
       pdf.setDrawColor(220, 220, 220);
       pdf.rect(14, y - 5, W - 28, 10, 'S');
-      pdf.text(item.name, 20, y + 1);
-      pdf.text(String(item.quantity), 80, y + 1);
-      pdf.text(item.unit, 110, y + 1);
-      pdf.text('Rs ' + (item.pricePerUnit || 0), 130, y + 1);
+      const itemName = String(item.name || '');
+      const itemQty  = String(item.quantity || 0);
+      const itemUnit = String(item.unit || '');
+      const itemRate = 'Rs ' + String(item.pricePerUnit || 0);
+      const itemAmt  = 'Rs ' + String(item.totalPrice || 0);
+      pdf.text(itemName, 20, y + 1);
+      pdf.text(itemQty,  80, y + 1);
+      pdf.text(itemUnit, 110, y + 1);
+      pdf.text(itemRate, 130, y + 1);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Rs ' + (item.totalPrice || 0), 165, y + 1);
+      pdf.text(itemAmt,  165, y + 1);
       pdf.setFont('helvetica', 'normal');
       y += 10;
     });
@@ -245,7 +250,7 @@ const Distribute = () => {
     pdf.setFontSize(12);
     pdf.text('TOTAL AMOUNT PAID (CASH)', 20, y + 9);
     pdf.setFontSize(14);
-    pdf.text('Rs ' + dist.totalAmount, W - 20, y + 9, { align: 'right' });
+    pdf.text('Rs ' + String(dist.totalAmount), W - 20, y + 9, { align: 'right' });
 
     // Footer
     y += 24;
