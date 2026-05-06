@@ -133,6 +133,14 @@ const Distribute = () => {
         month, year
       });
       setSuccess(data.data);
+      // Store distItems separately for PDF since API response may have Mongoose objects
+      setSuccess({ ...data.data, pdfItems: distItems.map(i => ({
+        name: String(i.name),
+        quantity: Number(i.quantity),
+        unit: String(i.unit),
+        pricePerUnit: Number(i.pricePerUnit || 0),
+        totalPrice: Number(i.totalPrice || 0)
+      })) });
       setShowPaymentModal(false);
       toast.success('Distribution recorded successfully!');
       setBeneficiary(null);
@@ -219,7 +227,8 @@ const Distribute = () => {
     pdf.setFontSize(10);
     y += 10;
 
-    dist.items.forEach((item, idx) => {
+    const pdfItems = dist.pdfItems || dist.items || [];
+    pdfItems.forEach((item, idx) => {
       if (idx % 2 === 0) {
         pdf.setFillColor(248, 250, 252);
         pdf.rect(14, y - 5, W - 28, 10, 'F');
