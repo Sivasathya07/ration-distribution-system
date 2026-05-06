@@ -154,127 +154,119 @@ const Distribute = () => {
   const downloadPDF = (dist) => {
     const pdf = new jsPDF();
     const W = 210;
+    const items = (dist.pdfItems || dist.items || []).map(i => ({
+      name:         '' + (i.name         || ''),
+      quantity:     '' + (i.quantity     || 0),
+      unit:         '' + (i.unit         || ''),
+      pricePerUnit: '' + (i.pricePerUnit || 0),
+      totalPrice:   '' + (i.totalPrice   || 0),
+    }));
 
-    // Header background
-    pdf.setFillColor(30, 64, 175);
-    pdf.rect(0, 0, W, 38, 'F');
+    const safe = (v) => ('' + (v || '')).replace(/[^\x20-\x7E]/g, '');
 
-    // Header text
+    // Header
+    pdf.setFillColor(26, 107, 60);
+    pdf.rect(0, 0, W, 40, 'F');
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(16);
-    pdf.text('RATION DISTRIBUTION RECEIPT', W / 2, 14, { align: 'center' });
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
-    pdf.text('Government of India  -  Public Distribution System', W / 2, 24, { align: 'center' });
+    pdf.setFontSize(15);
+    pdf.text('DIGITAL RATION DISTRIBUTION RECEIPT', W / 2, 13, { align: 'center' });
     pdf.setFontSize(9);
-    pdf.text('Digital Ration Distribution Monitoring System', W / 2, 32, { align: 'center' });
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Government of Tamil Nadu - Civil Supplies & Consumer Protection Dept.', W / 2, 22, { align: 'center' });
+    pdf.text('Tamil Nadu Public Distribution System (TNPDS)', W / 2, 30, { align: 'center' });
 
-    // Receipt info box
+    // Info box
     pdf.setTextColor(0, 0, 0);
-    pdf.setFillColor(240, 245, 255);
-    pdf.rect(14, 44, W - 28, 38, 'F');
-    pdf.setDrawColor(180, 200, 240);
-    pdf.rect(14, 44, W - 28, 38, 'S');
+    pdf.setFillColor(240, 250, 244);
+    pdf.rect(14, 46, W - 28, 36, 'F');
+    pdf.setDrawColor(26, 107, 60);
+    pdf.rect(14, 46, W - 28, 36, 'S');
 
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(10);
-    pdf.text('Receipt No:', 20, 53);
-    pdf.text('Date:', 20, 61);
-    pdf.text('Month/Year:', 20, 69);
-    pdf.text('Shop:', 110, 53);
-    pdf.text('Ration Card:', 110, 61);
+    pdf.setFontSize(9);
+    pdf.text('Receipt No :', 18, 55);
+    pdf.text('Date       :', 18, 63);
+    pdf.text('Month/Year :', 18, 71);
+    pdf.text('Shop       :', 110, 55);
+    pdf.text('Ration Card:', 110, 63);
 
     pdf.setFont('helvetica', 'normal');
-    pdf.text(dist.receiptNumber || 'N/A', 55, 53);
-    pdf.text(new Date(dist.createdAt).toLocaleDateString('en-IN'), 55, 61);
-    pdf.text(`${dist.month} ${dist.year}`, 55, 69);
-    pdf.text(dist.shop?.name || 'N/A', 135, 53);
-    pdf.text(dist.beneficiary?.rationCardNumber || 'N/A', 135, 61);
+    pdf.text(safe(dist.receiptNumber), 52, 55);
+    pdf.text(safe(new Date(dist.createdAt).toLocaleDateString('en-IN')), 52, 63);
+    pdf.text(safe(dist.month) + ' ' + safe(dist.year), 52, 71);
+    pdf.text(safe(dist.shop?.name), 135, 55);
+    pdf.text(safe(dist.beneficiary?.rationCardNumber), 135, 63);
 
-    // Beneficiary section
-    let y = 92;
+    // Beneficiary
+    let y = 90;
     pdf.setFillColor(220, 252, 231);
-    pdf.rect(14, y - 6, W - 28, 18, 'F');
-    pdf.setDrawColor(134, 239, 172);
-    pdf.rect(14, y - 6, W - 28, 18, 'S');
+    pdf.rect(14, y - 5, W - 28, 16, 'F');
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(11);
+    pdf.setFontSize(10);
     pdf.setTextColor(22, 101, 52);
-    pdf.text('Beneficiary: ' + (dist.beneficiary?.name || 'N/A'), 20, y + 2);
+    pdf.text('Beneficiary: ' + safe(dist.beneficiary?.name), 18, y + 2);
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(9);
-    pdf.setTextColor(21, 128, 61);
-    pdf.text('Family Members: ' + (dist.beneficiary?.familyMembers || 1), 20, y + 9);
+    pdf.text('Family Members: ' + safe(dist.beneficiary?.familyMembers || 1), 18, y + 9);
 
-    // Items table header
-    y = 120;
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFillColor(30, 64, 175);
+    // Table header
+    y = 116;
+    pdf.setFillColor(26, 107, 60);
     pdf.rect(14, y - 6, W - 28, 10, 'F');
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(9);
-    pdf.text('Item', 20, y);
-    pdf.text('Quantity', 80, y);
-    pdf.text('Unit', 110, y);
-    pdf.text('Rate (Rs)', 130, y);
-    pdf.text('Amount (Rs)', 165, y);
+    pdf.text('Item',        18, y);
+    pdf.text('Qty',         85, y);
+    pdf.text('Unit',       105, y);
+    pdf.text('Rate(Rs)',   128, y);
+    pdf.text('Amt(Rs)',    162, y);
 
-    // Items rows
+    // Table rows
     pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     y += 10;
 
-    const pdfItems = dist.pdfItems || dist.items || [];
-    pdfItems.forEach((item, idx) => {
-      if (idx % 2 === 0) {
-        pdf.setFillColor(248, 250, 252);
-        pdf.rect(14, y - 5, W - 28, 10, 'F');
-      }
-      pdf.setDrawColor(220, 220, 220);
+    items.forEach((item, idx) => {
+      if (idx % 2 === 0) { pdf.setFillColor(248, 252, 248); pdf.rect(14, y - 5, W - 28, 10, 'F'); }
+      pdf.setDrawColor(200, 230, 200);
       pdf.rect(14, y - 5, W - 28, 10, 'S');
-      const itemName = String(item.name || '');
-      const itemQty  = String(item.quantity || 0);
-      const itemUnit = String(item.unit || '');
-      const itemRate = 'Rs ' + String(item.pricePerUnit || 0);
-      const itemAmt  = 'Rs ' + String(item.totalPrice || 0);
-      pdf.text(itemName, 20, y + 1);
-      pdf.text(itemQty,  80, y + 1);
-      pdf.text(itemUnit, 110, y + 1);
-      pdf.text(itemRate, 130, y + 1);
+      pdf.text(item.name,         18, y + 1);
+      pdf.text(item.quantity,     85, y + 1);
+      pdf.text(item.unit,        105, y + 1);
+      pdf.text(item.pricePerUnit,128, y + 1);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(itemAmt,  165, y + 1);
+      pdf.text(item.totalPrice,  162, y + 1);
       pdf.setFont('helvetica', 'normal');
       y += 10;
     });
 
-    // Total box
-    y += 6;
-    pdf.setFillColor(30, 64, 175);
+    // Total
+    y += 4;
+    pdf.setFillColor(26, 107, 60);
     pdf.rect(14, y, W - 28, 14, 'F');
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    pdf.text('TOTAL AMOUNT PAID (CASH)', 20, y + 9);
-    pdf.setFontSize(14);
-    pdf.text('Rs ' + String(dist.totalAmount), W - 20, y + 9, { align: 'right' });
+    pdf.setFontSize(11);
+    pdf.text('TOTAL AMOUNT PAID (CASH)', 18, y + 9);
+    pdf.setFontSize(13);
+    pdf.text('Rs ' + safe(dist.totalAmount), W - 18, y + 9, { align: 'right' });
 
     // Footer
-    y += 24;
-    pdf.setTextColor(100, 100, 100);
+    y += 22;
+    pdf.setTextColor(120, 120, 120);
     pdf.setFont('helvetica', 'italic');
     pdf.setFontSize(8);
     pdf.text('Payment received in cash at the ration shop counter.', W / 2, y, { align: 'center' });
-    pdf.text('This is a computer-generated receipt and does not require a signature.', W / 2, y + 6, { align: 'center' });
+    pdf.text('This is a computer-generated receipt. No signature required.', W / 2, y + 6, { align: 'center' });
 
-    // Border around whole page
-    pdf.setDrawColor(30, 64, 175);
+    pdf.setDrawColor(26, 107, 60);
     pdf.setLineWidth(0.8);
-    pdf.rect(5, 5, W - 10, y + 14, 'S');
+    pdf.rect(5, 5, W - 10, y + 10, 'S');
 
-    pdf.save(`receipt_${dist.receiptNumber}.pdf`);
+    pdf.save('receipt_' + safe(dist.receiptNumber) + '.pdf');
   };
 
   const filtered = beneficiaries.filter(b =>
